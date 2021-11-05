@@ -21,7 +21,7 @@ def GetWIFIPassword():
     return '科技园三楼: kejiyuan123456\n宝山科技园: bskjy123456'
 
 def GWCreeper():
-    # Github 周刊爬虫: https://www.githubs.cn/trends/weekly
+    # Github 周刊爬虫
     result = []
     year = int(time.strftime("%Y")) % 100
     week = int(time.strftime("%W")) - 1

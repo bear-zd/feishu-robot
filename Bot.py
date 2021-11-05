@@ -61,7 +61,13 @@ class RequestHandler(BaseHTTPRequestHandler):
             return
 
         # 机器人回复收到的消息
-        self.send_message(access_token, event.get("open_id"), event.get("text"))
+        if event.get('chat_type') == 'group' and event.get('is_mention') == True:
+            open_id = event.get("open_chat_id")
+            open_id = {"open_chat_id":open_id}
+        else :
+            open_id = event.get("open_id")
+            open_id = {"open_id":open_id}
+        self.msg_compoment(access_token, open_id, event.get("text"))
         self.response("")
         return
 
@@ -104,12 +110,13 @@ class RequestHandler(BaseHTTPRequestHandler):
             "Authorization": "Bearer " + token
         }
         req_body = {
-            "open_id": open_id,
             "msg_type": "text",
             "content": {
                 "text": text
             }
         }
+        req_body = dict(req_body, **open_id) # 根据open_id判断返回域
+
         data = bytes(json.dumps(req_body), encoding='utf8')
         req = request.Request(url=url, data=data, headers=headers, method='POST')
         try:
@@ -131,10 +138,9 @@ class RequestHandler(BaseHTTPRequestHandler):
             self.send_message(token, open_id, GetWIFIPassword())
         elif "github周报" in text:
             GWC = GWCreeper()
+            print(GWC)
             for i in GWC:
                 self.send_message(token, open_id, i)
-
-
 
 
 
