@@ -129,7 +129,7 @@ dmypy.json
 .pyre/
 
 # pycharm
-./idea
+.idea/
 
 # test for zidea
 test.py

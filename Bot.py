@@ -131,6 +131,33 @@ class RequestHandler(BaseHTTPRequestHandler):
         if code != 0:
             print("send message error, code = ", code, ", msg =", rsp_dict.get("msg", ""))
 
+    def send_card(self, token, open_id, card): # 发送卡片
+        url = "https://open.feishu.cn/open-apis/message/v4/send/"
+        headers = {
+            "Content-Type": "application/json; charset=utf-8",
+            "Authorization": "Bearer " + token
+        } # 固定头
+        req_body = {
+            "msg_type": "interactive",
+            "card": card
+        } # 请求体
+        req_body = dict(req_body, **open_id) # 根据open_id判断返回域
+
+        data = bytes(json.dumps(req_body), encoding='utf8')
+        req = request.Request(url=url, data=data, headers=headers, method='POST')
+        try:
+            response = request.urlopen(req)
+        except Exception as e:
+            print(e.read().decode())
+            return
+
+        rsp_body = response.read().decode('utf-8')
+        rsp_dict = json.loads(rsp_body)
+        code = rsp_dict.get("code", -1)
+        if code != 0:
+            print("send message error, code = ", code, ", msg =", rsp_dict.get("msg", ""))
+
+
     def msg_compoment(self, token, open_id, text):
         if '骚话' in text:
             self.send_message(token, open_id, GetHitokoto())
@@ -140,7 +167,7 @@ class RequestHandler(BaseHTTPRequestHandler):
             GWC = GWCreeper()
             print(GWC)
             for i in GWC:
-                self.send_message(token, open_id, i)
+                self.send_card(token, open_id, i)
 
 
 

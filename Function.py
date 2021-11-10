@@ -5,6 +5,7 @@ import requests
 import json
 import urllib.request
 import ssl
+from CardTemplate import *
 
 
 def GetHitokoto():
@@ -19,7 +20,7 @@ def GetHitokoto():
 
 def GetWIFIPassword():
     return '科技园三楼: kejiyuan123456\n宝山科技园: bskjy123456'
-
+    
 def GWCreeper():
     # Github 周刊爬虫
     result = []
@@ -27,18 +28,13 @@ def GWCreeper():
     week = int(time.strftime("%W")) - 1
     if week == 1:
         week = 53
-    print(f'https://www.githubs.cn/trends/weekly/{year}{week}')
     content = requests.get(f'https://www.githubs.cn/trends/weekly/{year}{week}')
     if content.status_code == 200:
-        print('success')
         content = BeautifulSoup(content.text, 'html.parser').findAll(name="div", attrs={'class': 'repo-card'})
         for i in content:
             head = i.a.text
             url = i.a['href']
-            if '翻译' in i:
-                description = i.p.text
-            else:
-                description = i.p.text
+            description = i.p.text
             lanstar = i.findAll('span',
                                 {'class': 'MuiTypography-root MuiTypography-caption MuiTypography-colorTextSecondary'})
             if len(lanstar) == 1:
@@ -46,7 +42,9 @@ def GWCreeper():
                 language = ''
             else:
                 language, star = lanstar[0].text, lanstar[1].text
-            result.append(f'{head}\n{description}\n{url}\n语言：{language}    star：{star}'.replace('\xa0', ''))
+            result.append(ConWithPic(content=f'{head}\n{description}\n{url}\n语言：{language}    star：{star}'.replace('\xa0', '')
+                                    ,img_content=f'{head}')
+                        )
         return result
     else:
         print("现在无法访问或是机器人出现问题，请联系")
