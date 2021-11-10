@@ -8,10 +8,7 @@ from urllib import request, parse
 
 from utils import get_tenant_access_token
 from Function import *
-
-APP_ID = "cli_a109618a193b900c"
-APP_SECRET = "atIZtJxsxAxDfnOzO0dO9dUKuhpyNiZo"
-APP_VERIFICATION_TOKEN = "gwTk6uAZR2ha89gw568dRBMpN0uDaUb0"
+from Private import APP_VERIFICATION_TOKEN
 
 
 class RequestHandler(BaseHTTPRequestHandler):
@@ -64,10 +61,10 @@ class RequestHandler(BaseHTTPRequestHandler):
         # 机器人回复收到的消息
         if event.get('chat_type') == 'group' and event.get('is_mention') == True:
             open_id = event.get("open_chat_id")
-            open_id = {"open_chat_id":open_id}
-        else :
+            open_id = {"open_chat_id": open_id}
+        else:
             open_id = event.get("open_id")
-            open_id = {"open_id":open_id}
+            open_id = {"open_id": open_id}
         self.msg_compoment(access_token, open_id, event.get("text"))
         self.response("")
         return
@@ -77,7 +74,7 @@ class RequestHandler(BaseHTTPRequestHandler):
         self.send_header('Content-Type', 'application/json')
         self.end_headers()
         self.wfile.write(body.encode())
- 
+
     def send_message(self, token, open_id, text):
         url = "https://open.feishu.cn/open-apis/message/v4/send/"
         headers = {
@@ -90,7 +87,7 @@ class RequestHandler(BaseHTTPRequestHandler):
                 "text": text
             }
         }
-        req_body = dict(req_body, **open_id) # 根据open_id判断返回域
+        req_body = dict(req_body, **open_id)  # 根据open_id判断返回域
 
         data = bytes(json.dumps(req_body), encoding='utf8')
         req = request.Request(url=url, data=data, headers=headers, method='POST')
@@ -106,17 +103,17 @@ class RequestHandler(BaseHTTPRequestHandler):
         if code != 0:
             print("send message error, code = ", code, ", msg =", rsp_dict.get("msg", ""))
 
-    def send_card(self, token, open_id, card): # 发送卡片
+    def send_card(self, token, open_id, card):  # 发送卡片
         url = "https://open.feishu.cn/open-apis/message/v4/send/"
         headers = {
             "Content-Type": "application/json; charset=utf-8",
             "Authorization": "Bearer " + token
-        } # 固定头
+        }  # 固定头
         req_body = {
             "msg_type": "interactive",
             "card": card
-        } # 请求体
-        req_body = dict(req_body, **open_id) # 根据open_id判断返回域
+        }  # 请求体
+        req_body = dict(req_body, **open_id)  # 根据open_id判断返回域
 
         data = bytes(json.dumps(req_body), encoding='utf8')
         req = request.Request(url=url, data=data, headers=headers, method='POST')
@@ -131,7 +128,6 @@ class RequestHandler(BaseHTTPRequestHandler):
         code = rsp_dict.get("code", -1)
         if code != 0:
             print("send message error, code = ", code, ", msg =", rsp_dict.get("msg", ""))
-
 
     def msg_compoment(self, token, open_id, text):
         if '骚话' in text:
@@ -143,11 +139,6 @@ class RequestHandler(BaseHTTPRequestHandler):
             print(GWC)
             for i in GWC:
                 self.send_card(token, open_id, i)
-
-
-
-
-
 
 
 def run():

@@ -3,17 +3,15 @@ import json
 from urllib import request, parse
 import base64
 import requests
+from Private import APP_ID, APP_SECRET
 
-
-#APP_VERIFICATION_TOKEN = "gwTk6uAZR2ha89gw568dRBMpN0uDaUb0"
 
 def Img2Binary(url):
     return request.urlopen(url).read()
 
 
-def get_tenant_access_token(): # 获取token
-    APP_ID = "cli_a109618a193b900c"
-    APP_SECRET = "atIZtJxsxAxDfnOzO0dO9dUKuhpyNiZo"
+def get_tenant_access_token():  # 获取token
+
     url = "https://open.feishu.cn/open-apis/auth/v3/tenant_access_token/internal/"
     headers = {
         "Content-Type": "application/json"
@@ -39,13 +37,13 @@ def get_tenant_access_token(): # 获取token
         return ""
     return rsp_dict.get("tenant_access_token", "")
 
+
 def ImgUpload(Imgurl):
     url = 'https://open.feishu.cn/open-apis/image/v4/put/'
     token = get_tenant_access_token()
     Imgcontent = Img2Binary(Imgurl)
-    headers = {"Authorization":"Bearer " + token}
+    headers = {"Authorization": "Bearer " + token}
     files = {"image": Imgcontent}
-    data = {"image_type":"message"}
+    data = {"image_type": "message"}
     req = requests.post(url=url, data=data, headers=headers, files=files)
     return req.json()['data']['image_key']
-

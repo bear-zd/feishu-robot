@@ -133,3 +133,4 @@ dmypy.json
 
 # test for zidea
 test.py
+Private.py

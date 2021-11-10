@@ -7,6 +7,7 @@ import urllib.request
 import ssl
 from CardTemplate import *
 from utils import *
+from Private import WIFIPW, GithubWeekly
 
 
 def GetHitokoto():
@@ -20,8 +21,9 @@ def GetHitokoto():
 
 
 def GetWIFIPassword():
-    return '科技园三楼: kejiyuan123456\n宝山科技园: bskjy123456'
-    
+    return WIFIPW
+
+
 def GWCreeper():
     # Github 周刊爬虫
     headers = {'user-agent':
@@ -31,14 +33,14 @@ def GWCreeper():
     week = int(time.strftime("%W")) - 1
     if week == 1:
         week = 53
-    content = requests.get(f'https://www.githubs.cn/trends/weekly/{year}{week}', headers=headers)
+    content = requests.get(f'{GithubWeekly}{year}{week}', headers=headers)
     if content.status_code == 200:
         content = BeautifulSoup(content.text, 'html.parser').findAll(name="div", attrs={'class': 'repo-card'})
         for i in content:
             infor = i.findAll('a')
             head = infor[0].text
             author = infor[1].text.split('@')[1]
-            avatarurl = r'https://avatars.githubusercontent.com/'+author+'?size=64'
+            avatarurl = r'https://avatars.githubusercontent.com/' + author + '?size=64'
             imgKey = ImgUpload(avatarurl)
             url = i.a['href']
             description = i.p.text
@@ -49,10 +51,10 @@ def GWCreeper():
                 language = ''
             else:
                 language, star = lanstar[0].text, lanstar[1].text
-            result.append(ConWithPic(content=f'**{head}**\n{description}\n{url}\n语言：{language}    star：{star}'.replace('\xa0', '')
-                                    ,img_content=f'{head}', img_key=imgKey)
-                        )
+            result.append(
+                ConWithPic(content=f'**{head}**\n{description}\n{url}\n语言：{language}    star：{star}'.replace('\xa0', '')
+                           , img_content=f'{head}', img_key=imgKey)
+                )
         return result
     else:
         print("现在无法访问或是机器人出现问题，请联系")
-
