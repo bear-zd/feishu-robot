@@ -6,6 +6,7 @@ import json
 import urllib.request
 import ssl
 from CardTemplate import *
+from utils import *
 
 
 def GetHitokoto():
@@ -23,16 +24,22 @@ def GetWIFIPassword():
     
 def GWCreeper():
     # Github 周刊爬虫
+    headers = {'user-agent':
+                   'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.25 Safari/537.36 Core/1.70.3861.400 QQBrowser/10.7.4313.400'}
     result = []
     year = int(time.strftime("%Y")) % 100
     week = int(time.strftime("%W")) - 1
     if week == 1:
         week = 53
-    content = requests.get(f'https://www.githubs.cn/trends/weekly/{year}{week}')
+    content = requests.get(f'https://www.githubs.cn/trends/weekly/{year}{week}', headers=headers)
     if content.status_code == 200:
         content = BeautifulSoup(content.text, 'html.parser').findAll(name="div", attrs={'class': 'repo-card'})
         for i in content:
-            head = i.a.text
+            infor = i.findAll('a')
+            head = infor[0].text
+            author = infor[1].text.split('@')[1]
+            avatarurl = r'https://avatars.githubusercontent.com/'+author+'?size=64'
+            imgKey = ImgUpload(avatarurl)
             url = i.a['href']
             description = i.p.text
             lanstar = i.findAll('span',
@@ -43,7 +50,7 @@ def GWCreeper():
             else:
                 language, star = lanstar[0].text, lanstar[1].text
             result.append(ConWithPic(content=f'{head}\n{description}\n{url}\n语言：{language}    star：{star}'.replace('\xa0', '')
-                                    ,img_content=f'{head}')
+                                    ,img_content=f'{head}', imgKey=imgKey)
                         )
         return result
     else:
