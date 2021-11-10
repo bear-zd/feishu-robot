@@ -6,6 +6,7 @@ from os import path
 import json
 from urllib import request, parse
 
+from utils import get_tenant_access_token
 from Function import *
 
 APP_ID = "cli_a109618a193b900c"
@@ -55,7 +56,7 @@ class RequestHandler(BaseHTTPRequestHandler):
             return
 
         # 调用发消息 API 之前，先要获取 API 调用凭证：tenant_access_token
-        access_token = self.get_tenant_access_token()
+        access_token = get_tenant_access_token()
         if access_token == "":
             self.response("")
             return
@@ -76,33 +77,7 @@ class RequestHandler(BaseHTTPRequestHandler):
         self.send_header('Content-Type', 'application/json')
         self.end_headers()
         self.wfile.write(body.encode())
-
-    def get_tenant_access_token(self):
-        url = "https://open.feishu.cn/open-apis/auth/v3/tenant_access_token/internal/"
-        headers = {
-            "Content-Type": "application/json"
-        }
-        req_body = {
-            "app_id": APP_ID,
-            "app_secret": APP_SECRET
-        }
-
-        data = bytes(json.dumps(req_body), encoding='utf8')
-        req = request.Request(url=url, data=data, headers=headers, method='POST')
-        try:
-            response = request.urlopen(req)
-        except Exception as e:
-            print(e.read().decode())
-            return ""
-
-        rsp_body = response.read().decode('utf-8')
-        rsp_dict = json.loads(rsp_body)
-        code = rsp_dict.get("code", -1)
-        if code != 0:
-            print("get tenant_access_token error, code =", code)
-            return ""
-        return rsp_dict.get("tenant_access_token", "")
-
+ 
     def send_message(self, token, open_id, text):
         url = "https://open.feishu.cn/open-apis/message/v4/send/"
         headers = {

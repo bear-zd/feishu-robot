@@ -49,8 +49,8 @@ def GWCreeper():
                 language = ''
             else:
                 language, star = lanstar[0].text, lanstar[1].text
-            result.append(ConWithPic(content=f'{head}\n{description}\n{url}\n语言：{language}    star：{star}'.replace('\xa0', '')
-                                    ,img_content=f'{head}', imgKey=imgKey)
+            result.append(ConWithPic(content=f'**{head}**\n{description}\n{url}\n语言：{language}    star：{star}'.replace('\xa0', '')
+                                    ,img_content=f'{head}', img_key=imgKey)
                         )
         return result
     else:
