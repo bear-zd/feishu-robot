@@ -54,7 +54,11 @@ def GWCreeper():
             result.append(
                 ConWithPic(content=f'**{head}**\n{description}\n{url}\n语言：{language}    star：{star}'.replace('\xa0', '')
                            , img_content=f'{head}', img_key=imgKey)
-                )
+            )
         return result
     else:
         print("现在无法访问或是机器人出现问题，请联系")
+
+
+def ReceiptUpload():
+    pass

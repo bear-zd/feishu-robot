@@ -3,7 +3,7 @@ import json
 from urllib import request, parse
 import base64
 import requests
-from Private import APP_ID, APP_SECRET
+from Private import APP_ID, APP_SECRET, GetAccess
 
 
 def Img2Binary(url):
@@ -47,3 +47,26 @@ def ImgUpload(Imgurl):
     data = {"image_type": "message"}
     req = requests.post(url=url, data=data, headers=headers, files=files)
     return req.json()['data']['image_key']
+
+
+def isreciept(ImgUrl):
+    request_url = "https://aip.baidubce.com/rest/2.0/ocr/v1/vat_invoice"
+    # 二进制方式打开图片文件
+    if "http" in ImgUrl:
+        token = get_tenant_access_token()
+        headers = {"Authorization": "Bearer " + token}
+        req = request.Request(url=ImgUrl, headers=headers, method='GET')
+        img = base64.b64encode(request.urlopen(req).read())
+
+    else :
+        img = base64.b64encode(open(ImgUrl, 'rb').read())
+
+    params = {"image": img}
+    access_token = GetAccess()
+    request_url = request_url + "?access_token=" + access_token
+    headers = {'content-type': 'application/x-www-form-urlencoded'}
+    result = requests.post(request_url, data=params, headers=headers).json()
+    if result.get('error_code') != None:
+        return {'isreciept':False, 'InvoiceCodeConfirm':None}
+    else:
+        return {'isreciept':True, 'InvoiceCodeConfirm':result['words_result'].get('InvoiceCodeConfirm','未识别成功')}

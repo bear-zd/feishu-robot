@@ -6,7 +6,7 @@ from os import path
 import json
 from urllib import request, parse
 
-from utils import get_tenant_access_token
+from utils import get_tenant_access_token, isreciept
 from Function import *
 from Private import APP_VERIFICATION_TOKEN
 
@@ -47,27 +47,42 @@ class RequestHandler(BaseHTTPRequestHandler):
     def handle_message(self, event):
         # 此处只处理 text 类型消息，其他类型消息忽略
         msg_type = event.get("msg_type", "")
-        if msg_type != "text":
-            print("unknown msg_type =", msg_type)
+        if msg_type == "text":
+            # 调用发消息 API 之前，先要获取 API 调用凭证：tenant_access_token
+            access_token = get_tenant_access_token()
+            if access_token == "":
+                self.response("")
+                return
+
+            # 机器人回复收到的消息
+            if event.get('chat_type') == 'group' and event.get('is_mention') == True:
+                open_id = event.get("open_chat_id")
+                open_id = {"open_chat_id": open_id}
+            else:
+                open_id = event.get("open_id")
+                open_id = {"open_id": open_id}
+            self.msg_compoment(access_token, open_id, event.get("text"))
             self.response("")
             return
+        elif msg_type == "image":
+            img_key = event.get("image_key")
+            reciept = isreciept(f'https://open.feishu.cn/open-apis/image/v4/get?image_key={img_key}')
+            if reciept.get('isreciept', False) == True:
+                access_token = get_tenant_access_token()
+                open_id = event.get("open_id")
+                open_id = {"open_id": open_id}
+                self.msg_compoment(access_token, open_id, f"发票识别成功，发票号为:{reciept.get('InvoiceCodeConfirm')}")
+                self.response("")
+                return
+            else:
+                access_token = get_tenant_access_token()
+                open_id = event.get("open_id")
+                open_id = {"open_id": open_id}
+                self.msg_compoment(access_token, open_id, "目前暂不支持其他图片功能")
+                self.response("")
+                return
 
-        # 调用发消息 API 之前，先要获取 API 调用凭证：tenant_access_token
-        access_token = get_tenant_access_token()
-        if access_token == "":
-            self.response("")
-            return
 
-        # 机器人回复收到的消息
-        if event.get('chat_type') == 'group' and event.get('is_mention') == True:
-            open_id = event.get("open_chat_id")
-            open_id = {"open_chat_id": open_id}
-        else:
-            open_id = event.get("open_id")
-            open_id = {"open_id": open_id}
-        self.msg_compoment(access_token, open_id, event.get("text"))
-        self.response("")
-        return
 
     def response(self, body):
         self.send_response(200)
@@ -139,6 +154,8 @@ class RequestHandler(BaseHTTPRequestHandler):
             print(GWC)
             for i in GWC:
                 self.send_card(token, open_id, i)
+        else :
+            self.send_message(token, open_id, text)
 
 
 def run():
